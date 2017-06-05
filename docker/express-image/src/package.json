@@ -1,0 +1,15 @@
+{
+  "name": "students",
+  "version": "0.1.0",
+  "description": "Part 2 of labo http",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Luana Martelli",
+  "license": "ISC",
+  "dependencies": {
+    "chance": "^1.0.9",
+    "express": "^4.15.3"
+  }
+}
