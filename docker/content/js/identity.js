@@ -12,8 +12,8 @@ $(function() {
   });
 
   };
-
   getNewId();
+  setInterval( getNewId, 2000 );
 });
 
 
