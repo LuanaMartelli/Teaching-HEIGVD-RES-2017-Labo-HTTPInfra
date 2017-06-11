@@ -1,134 +1,154 @@
-# Teaching-HEIGVD-RES-2017-Labo-HTTPInfra
+# Labo HTTP Infrastructure
 
-## Objectives
+## Ludovic Richard & Luana Martelli
 
-The first objective of this lab is to get familiar with software tools that will allow us to build a **complete web infrastructure**. By that, we mean that we will build an environment that will allow us to serve **static and dynamic content** to web browsers. To do that, we will see that the **apache httpd server** can act both as a **HTTP server** and as a **reverse proxy**. We will also see that **express.js** is a JavaScript framework that makes it very easy to write dynamic web apps.
+## Introduction 
+L’objectif de ce laboratoire est de se familiariser avec des outils de développement logiciel pour construire une infrastructure web. Nous allons construire deux serveurs, l’un avec du contenu statique, l’autre avec du contenu dynamique, reliés par un proxy. Pour ce laboratoire, nous allons aussi apprendre à exécuter des requêtes asynchrones. Tous ces serveurs seront lancés via Docker. 
 
-The second objective is to implement a simple, yet complete, **dynamic web application**. We will create **HTML**, **CSS** and **JavaScript** assets that will be served to the browsers and presented to the users. The JavaScript code executed in the browser will issue asynchronous HTTP requests to our web infrastructure (**AJAX requests**) and fetch content generated dynamically.
+## Partie 1 : Serveur http static avec apache
 
-The third objective is to practice our usage of **Docker**. All the components of the web infrastructure will be packaged in custom Docker images (we will create at least 3 different images).
+### Objectifs
+Installer un serveur apache via une image docker. Ecrire le Dockerfile correspondant et ajouter du contenu basique à une page HTML.
 
-## General instructions
+### Manipulations
+Pour cette partie, nous sommes allés chercher une image officielle apache sur Docker hub. Nous avons choisi l’image php. Dans le Dockerfile, la première ligne (FROM) spécifie le nom de l’image ainsi que sa version. La deuxième ligne permet de copier des fichiers de note système de fichier local dans le système de fichier de l’image. On aurait pu démarrer l’image officielle sans utiliser de Dockerfile, afin d’effectuer quelques tests préliminaires (afin de devoir éviter de toujours reconstruire l’image). Dans ce cas, on va directement chercher l’image sur le site officiel. 
+Entrer dans le container et accéder aux fichiers de config: 
 
-* This is a **BIG** lab and you will need a lot of time to complete it. This is the last lab of the semester (but it will keep us busy for 6 weeks!). You will also have time during the Monday lectures to work on it.
-* We have prepared webcasts for a big portion of the lab (what can get you the "base" grade).
-* To get **additional points**, you will need to do research in the documentation by yourself (we are here to help, but we will not give you step-by-step instructions!). To get the extra points, you will also need to be creative (do not expect complete guidelines).
-* You will get only one grade for the lab, but it will a 3x factor (so far, you have 4 lab grades).
-* The lab can be done in **groups of 2 students**. You will learn very important skills and tools, which you will need to next year's courses. You cannot afford to skip this content if you want to survive next year.
-* Read carefully all the **acceptance criteria**.
-* Be careful with the deadlines.
-* It is your responsibility to schedule the demo sessions (plan ahead and show your results ASAP).
-* When you do your **demo**, be prepared to that you can go through the procedure quickly (there are a lot of solutions to evaluate!)
+`docker exec -it nom_image /bin/bash`
 
+`cd /etc/apache2`
 
-## Step 1: Static HTTP server with apache httpd
+fichier apache2.conf
 
-### Webcasts
+`cd sites-available`
 
-* [Labo HTTP (1): Serveur apache httpd "dockerisé" servant du contenu statique](https://www.youtube.com/watch?v=XFO4OmcfI3U)
+Dans le fichier 000-default.conf, un ligne spécifie le chemin par défaut /var/www/html
+Commandes utiles : 
 
-### Acceptance criteria
+`docker build -it res/apache_php .`
 
-* You have a GitHub repo with everything needed to build the Docker image.
-* You do a demo, where you build the image, run a container and access content from a browser.
-* You have used a nice looking web template, different from the one shown in the webcast.
-* You are able to explain what you do in the Dockerfile.
-* You are able to show where the apache config files are located (in a running container).
-* You have documented your configuration in your report.
-
-## Step 2: Dynamic HTTP server with express.js
-
-### Webcasts
-
-* [Labo HTTP (2a): Application node "dockerisée"](https://www.youtube.com/watch?v=fSIrZ0Mmpis)
-* [Labo HTTP (2b): Application express "dockerisée"](https://www.youtube.com/watch?v=o4qHbf_vMu0)
-
-### Acceptance criteria
-
-* You have a GitHub repo with everything needed to build the Docker image.
-* You do a demo, where you build the image, run a container and access content from a browser.
-* You generate dynamic, random content and return a JSON payload to the client.
-* You cannot return the same content as the webcast (you cannot return a list of people).
-* You don't have to use express.js; if you want, you can use another JavaScript web framework or event another language.
-* You have documented your configuration in your report.
+`docker run -p 9090:80 res/apache_php`  
 
 
-## Step 3: Reverse proxy with apache (static configuration)
+## Partie 2 : Serveur http dynamique avec javascript
 
-### Webcasts
+### Objectifs
+Ecrire une application web dynamique avec javascript. Cette application doit retourner une chaîne de caractères sous format JSON après une requête GET.
 
-* [Labo HTTP (3a): reverse proxy apache httpd dans Docker](https://www.youtube.com/watch?v=WHFlWdcvZtk)
-* [Labo HTTP (3b): reverse proxy apache httpd dans Docker](https://www.youtube.com/watch?v=fkPwHyQUiVs)
-* [Labo HTTP (3c): reverse proxy apache httpd dans Docker](https://www.youtube.com/watch?v=UmiYS_ObJxY)
+### Manipulations
+Dans le Dockerfile, les deux premières lignes ont le même but qu’au point 1. La dernière ligne représente la commande à effectuer lors du lancement du contnair. Il va donc effectuer la commande node index.js, qui va donc exécuter le script.
+Npm init sert à créer le fichier package.json qui contient les informations relatives à l’application (entre-autres, les dépendances).    
+Notre application dynamique renvoie une nouvelle identité sous format JSON. Pour tous les espions qui doivent changer de couverture, ils y trouveront un nouveau prénom, nom, adresse email ainsi qu’une phrase de 6 mots. Cette phrase est leur phrase de secours en cas de problème.   
 
+## Partie 3 : Apache reverse proxy
 
-### Acceptance criteria
+### Objectifs
+Développer un reverse proxy qui va être le lien entre nos deux containers et le reste du monde. Toutes les requêtes vont passer par le proxy.
 
-* You have a GitHub repo with everything needed to build the Docker image for the container.
-* You do a demo, where you start from an "empty" Docker environment (no container running) and where you start 3 containers: static server, dynamic server and reverse proxy; in the demo, you prove that the routing is done correctly by the reverse proxy.
-* You can explain and prove that the static and dynamic servers cannot be reached directly (reverse proxy is a single entry point in the infra). 
-* You are able to explain why the static configuration is fragile and needs to be improved.
-* You have documented your configuration in your report.
+### Manipulations
+Dans cette configuration, les adresses IP des containers ont dû être hardcodées : c’est une mauvaise pratique puisque rien de garanti que, lorsque l’on va relancer les container docker, les adresses IP attribuées seront les mêmes. Il faut donc vérifier ce point à chaque fois que l’on relance l’application.
+Le proxy n’a pas de contenu à proprement parlé, il doit juste rediriger le client suivant la requête effectuée. C’est pourquoi dans cette partie, nous avons dû modifier un fichier de configuration se trouvant dans le dossier /etc/apache2/sites-available. Nous avons créé un nouveau fichier de configuration pour que le proxy sache ce qu’il doit retourner au client selon la requête de ce dernier. Il existe deux mots-clés pour définir une route du proxy à l’hôte virtuel souhaité. Il s’agit de proxypass et de proxypassreverse. Pour que le fichier de configuration soit utilisé, il faut ajouter le module correspondant au Dockerfile avec la commande a2enmod (car, par défaut, les deux mots-clés ci-dessus sont inconnus). Finalement, nous avons dû modifier le fichier hosts dans nos machines afin de lier l’adresse IP de la machine virtuelle à un serveur DNS. Ceci nous permet d’effectuer des requêtes via le navigateur et pas juste telnet.
 
+##Partie 4 : Ajax avec JQuery
 
-## Step 4: AJAX requests with JQuery
+### Objectif
+Utiliser JQuery pour effectuer des requêtes AJAX. Le but est de pouvoir faire automatiquement des requêtes vers le service dynamique.
 
-### Webcasts
+### Manipulations
+Pour relancer les containers, on les redémarre dans un ordre particulier. Puisque pour le moment, les adresses sont hardcodées dans le fichier de configuration, on espère qu’ils gardent les mêmes adresses IP. 
+Manipulation à faire si le paquet node_modules est absent : `npm install`.
+Nous avons modifié la page html principale de note application pour y mettre un script javascript, qui effectue des requêtes auprès de notre container express, effectué à l’étape 2. Après avoir créé ce petit script, nous avons fait en sorte que la page principale se recharge toutes les deux secondes.
+Remarque : Les navigateurs utilisent ce qu’on appelle same-origin policy. Cela signifie que si un script est exécuté avec un certain nom de domaine, alors il ne pourra faire des requêtes que vers ce même nom de domaine, et donc vers la même machine.
+Dans le cas de notre labo, on veut faire des requêtes vers la machine express qui fournit du contenu dynamique alors que la requête vient de la machine qui fournit le contenu statique. Il ne serait donc à priori pas possible de faire les choses ainsi. 
+Nous avons donc mis en place un reverse proxy, pour que la machine qui exécute le script ait l'impression que l'origine du script ainsi que la destination de ses requêtes respectivement vient et va au même point réseau, alors qu'en fait ce sont des machines différentes cachées derrière un intermédiaire (le reverse proxy).
 
-* [Labo HTTP (4): AJAX avec JQuery](https://www.youtube.com/watch?v=fgpNEbgdm5k)
+## Partie 5 : configuration dynamique d’un reverse proxy
 
-### Acceptance criteria
+### Objectif
+Modifier le fichier de configuration du reverse proxy afin de se débarrasser des adresses ip hardcodées dans le fichier.
 
-* You have a GitHub repo with everything needed to build the various images.
-* You do a complete, end-to-end demonstration: the web page is dynamically updated every few seconds (with the data coming from the dynamic backend).
-* You are able to prove that AJAX requests are sent by the browser and you can show the content of th responses.
-* You are able to explain why your demo would not work without a reverse proxy (because of a security restriction).
-* You have documented your configuration in your report.
+### Manipulations
+Il est possible, depuis la ligne de commande lors du lancement d’un container, de modifier les variables d’environnement de ce dernier. Ceci est très pratique, puisque nous pouvons donc avoir accès, depuis l’extérieur, à du contenu interne. Avec cette pratique, nous allons pouvoir modifier le fichier de configuration contenant les adresses IP des deux machines de manière dynamique. Pour se faire, nous devons exécuter des commandes pendant le lancement du reverse proxy. En allant regarder à la fin du Dockerfile de php (l’image utilisée pour lancer nos containers), on voit que la commande apache2 est lancée en premier plan à la fin du fichier. L’idée est d’exécuter notre propre script avant de lancer cette ultime commande. Nous avons donc repris ce script, apache2-foreground, afin d’ajouter notre code ; nous avons fait en sorte que les IP passées en paramètres de la commande lors du lancement du container modifient les variables d’environnements correspondantes. Finalement, nous avons écrit un script en php pour rediriger les adresses IP vers les variables d’environnement, et non plus vers les adresses hardcodées en dur. Pour le bon fonctionnement de la manipulation, l’étape ultime a été de copier ce fichier de configuration php dans le container sous le chemin /var/apache2/template et d’écraser le fichier de configuration par ledit fichier php dans le document apache2-foreground modifié.
 
-## Step 5: Dynamic reverse proxy configuration
+## Partie bonus : load balancing
 
-### Webcasts
+### Objectif
+Lancer plusieurs serveurs fournissant le même service. Le proxy connaît ces serveurs et peut rediriger les requêtes sur tel ou tel serveur, suivant le trafic ou si un serveur tombe en panne.
 
-* [Labo HTTP (5a): configuration dynamique du reverse proxy](https://www.youtube.com/watch?v=iGl3Y27AewU)
-* [Labo HTTP (5b): configuration dynamique du reverse proxy](https://www.youtube.com/watch?v=lVWLdB3y-4I)
-* [Labo HTTP (5c): configuration dynamique du reverse proxy](https://www.youtube.com/watch?v=MQj-FzD-0mE)
-* [Labo HTTP (5d): configuration dynamique du reverse proxy](https://www.youtube.com/watch?v=B_JpYtxoO_E)
-* [Labo HTTP (5e): configuration dynamique du reverse proxy](https://www.youtube.com/watch?v=dz6GLoGou9k)
+### Source
+https://httpd.apache.org/docs/2.4/howto/reverse_proxy.html
 
-### Acceptance criteria
+### Manipulations
+Pour cette partie, nous avons modifié en premier lieu le fichier de configuration php. Nous avons ajouté les mots-clés (BalanceMember et ProxySet) pour indiquer au proxy que plusieurs serveurs fournissent le même service. Pour cette partie, nous avons mis à disposition deux serveurs pour la partie dynamique et deux serveurs pour la partie statique. Finalement, nous avons ajouté les modules permettant d’utiliser le load balancing dans le Dockerfile.
 
-* You have a GitHub repo with everything needed to build the various images.
-* You have found a way to replace the static configuration of the reverse proxy (hard-coded IP adresses) with a dynamic configuration.
-* You may use the approach presented in the webcast (environment variables and PHP script executed when the reverse proxy container is started), or you may use another approach. The requirement is that you should not have to rebuild the reverse proxy Docker image when the IP addresses of the servers change.
-* You are able to do an end-to-end demo with a well-prepared scenario. Make sure that you can demonstrate that everything works fine when the IP addresses change!
-* You are able to explain how you have implemented the solution and walk us through the configuration and the code.
-* You have documented your configuration in your report.
+### Tests
+Afin de vérifier le bon fonctionnement de cette étape, nous avons lancé deux containers statiques, 2 containers dynamiques et le proxy. Nous avons alors stoppé l’exécution d’un des containers (statique ou dynamique). Après recharge de la page, le proxy a réussi à envoyer les requêtes au serveur toujours actif, et nous avons pu observer le bon fonctionnement de l’application.
+Commandes effectuées : 
+Dans le dossier du serveur statique :
 
-## Additional steps to get extra points on top of the "base" grade
+`docker build -t res/apache_php .`
 
-### Load balancing: multiple server nodes (0.5pt)
+`docker run -d res/apache_php` (x2)
 
-* You extend the reverse proxy configuration to support **load balancing**. 
-* You show that you can have **multiple static server nodes** and **multiple dynamic server nodes**. 
-* You prove that the **load balancer** can distribute HTTP requests between these nodes.
-* You have documented your configuration and your validation procedure in your report.
+Dans le dossier du serveur dynamique : 
 
-### Load balancing: round-robin vs sticky sessions (0.5 pt)
+`docker build -t res/express .`
 
-* You do a setup to demonstrate the notion of sticky session.
-* You prove that your load balancer can distribute HTTP requests in a round-robin fashion to the dynamic server nodes (because there is no state).
-* You prove that your load balancer can handle sticky sessions when forwarding HTTP requests to the static server nodes.
-* You have documented your configuration and your validation procedure in your report.
+`docker run -d res/express` (x2)
 
-### Dynamic cluster management (0.5 pt)
+Dans le dossier du reverse proxy : 
 
-* You develop a solution, where the server nodes (static and dynamic) can appear or disappear at any time.
-* You show that the load balancer is dynamically updated to reflect the state of the cluster.
-* You describe your approach (are you implementing a discovery protocol based on UDP multicast? are you using a tool such as serf?)
-* You have documented your configuration and your validation procedure in your report.
+`docker build -t res/apache_rp .`
 
-### Management UI (0.5 pt)
+`docker run -p 8080:80 -e STATIC_APP1=172.17.0.2:80 -e STATIC_APP2=172.17.0.3:80 -e DYNAMIC_APP1=172.17.0.4:3000 -e DYNAMIC_APP2=172.17.0.5:3000 res/apache_rp`
 
-* You develop a web app (e.g. with express.js) that administrators can use to monitor and update your web infrastructure.
-* You find a way to control your Docker environment (list containers, start/stop containers, etc.) from the web app. For instance, you use the Dockerode npm module (or another Docker client library, in any of the supported languages).
-* You have documented your configuration and your validation procedure in your report.
+À noter que les adresses ip ont été trouvées avec la commande `docker inspect`.
+
+Nous pouvons voir que l'application tourne correctement. Si on tue un container dynamique (par exemple), on peut voir que le proxy se tourne vers l'autre serveur actif au bout de quelques secondes.
+
+## Partie bonus : Round-Robin vs Sticky Session
+
+### Objectif
+Comprendre la différence entre les deux termes. Faire en sorte que le proxy puisse passer de l'un à l'autre.
+
+### Remarque
+Pour cette partie, nous avons cherché une image de reverse proxy qui implémentait du load-balancing. Nous avons trouvé plusieurs résultats, tel que nginx ou traefik. Notre choix s'est porté sur traefix car la documentation et l'implémentation ont été plus facile à comprendre et mettre en place.
+
+### Définitions 
+Round-Robin : Pour un serveur ayant plusieurs adresses IP disponibles, une façon de répartir la charge entraînée par du trafic entre les machines est d'implémenter un round-robin. En d'autres termes, pour un sevreur donné, le proxy dispose d'une liste d'adresses IP à sa disposition. Pour chaque requête, il va la rediriger sur la première adresse de sa liste, puis mettre l'adresse IP en fin de liste, et ainsi de suite. 
+Sticky-Session : Permet de lier la session d'un utilisateur avec une instance en particulier. Pour se faire, le proxy va utiliser un cookie de session. 
+
+### Source
+https://traefik.io/
+https://hub.docker.com/_/traefik/
+https://docs.traefik.io/toml/#docker-backend
+
+### Manipulations 
+La première étape a été d'écrire un Dockerfile. Ce Dockerfile contient uniquement le nom de l'image traefik et la commande pour copier le fichier de configuration local dans le container.
+Ensuite, nous avons modifié ledit fichier de configuration selon les directives du site. Nous avons spécifié le nom de domaine ainsi que le port utilisé.
+Finalement, dans les fichiers docker des serveurs dynamique et statiques, nous avons dû ajouter des labels. Par défaut, traefik a un certain comportement (comme le port). Nous avons donc mis les informations nécessaires pour le bon fonctionnement de l'application. Par défaut, traefik est implémenté en round robin (wrr). Pour activer le sticky session, il faut cependant mettre le paramètre à true. Nous l'avons mis pour le serveur statique. 
+
+### Tests
+Après le lancement des containers dynamiques et statiques (dans les bons dossiers)
+
+`docker build -t res/apache_static .`
+
+`docker run -d res/apache_static`
+
+`docker build -t res/express .`
+
+`docker run -d res/express`
+
+On lance le traefik : 
+
+`docker build -t res/traefik .`
+
+`docker run -d -p 9090:8080 -p 8080:80 -v /var/run/docker.sock:/var/run/docker.sock res/traefik`
+
+Le port 9090 permet d'accéder au tableau de bord de traefik et ainsi de contrôler les serveurs actifs. L'application est toujours active depuis le port 8080. De plus, l'option -v permet de réserver un certain volume (car par défaut, le volume accordé au container est limité).
+
+## Dynamic cluster management 
+
+### Remarques
+Par défaut, traefik charge dynamiquement les containers. Il n'y a pas eu besoin de faire de manipulations supplémentaires pour cette partie. Afin de tester le bon fonctionnement de cette partie, nous pouvons lancer les containers, comme à l'étape précédante, supprimer un container, en relancer un et vérifier que l'application continue de tourner après quelques secondes. 
+À noter que dans git, cette partie se trouve du coup aussi dans la branche labo_step2. 
